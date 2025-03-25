@@ -1,8 +1,10 @@
 package greenjangtanji.yeosuro.user.dto;
 import greenjangtanji.yeosuro.user.entity.User;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@AllArgsConstructor
 public class UserResponseDto {
 
     @Getter

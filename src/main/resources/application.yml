@@ -22,6 +22,19 @@ spring:
         format_sql: true
         show_sql: true
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${GOOGLE_USERNAME}
+    password: ${GOOGLE_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          timeout: 5000
+          starttls:
+            enable: true
+
   security:
     oauth2:
       client:
@@ -56,3 +69,13 @@ jwt:
   refresh:
     expiration: 1209600000
     header: Authorization-refresh
+
+cloud:
+  aws:
+    s3:
+      bucket: yeosuroimage
+    stack.auto: false
+    region.static: ap-northeast-2
+    credentials:
+      accessKey: ${AWS_ACCESSKEY}
+      secretKey: ${AWS_SECRETKEY}

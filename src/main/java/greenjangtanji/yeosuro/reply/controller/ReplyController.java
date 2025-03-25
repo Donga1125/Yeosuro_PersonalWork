@@ -29,10 +29,11 @@ public class ReplyController {
     //댓글 생성
     @PostMapping()
     public ResponseEntity postReply (@Valid @RequestBody ReplyRequestDto.Post postDto,
-                                     Authentication authentication) throws Exception {
+                                     Authentication authentication){
 
         Long userId = userService.extractUserId(authentication);
         Reply reply = replyService.createReply(userId, postDto);
+
         ReplyResponseDto responseDto = new ReplyResponseDto(reply);
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
@@ -40,7 +41,7 @@ public class ReplyController {
     //댓글 조회 (게시글에 달린 모든 댓글 조회)
     @GetMapping("{feed-id}")
     public ResponseEntity getRepliesByFeedId (@PathVariable("feed-id") Long feedId){
-        List<Reply> allReplies = replyService.getRepliesByFeedId(feedId);
+        List<ReplyResponseDto> allReplies = replyService.getRepliesByFeedId(feedId);
 
         return new ResponseEntity<>(allReplies, HttpStatus.OK);
     }

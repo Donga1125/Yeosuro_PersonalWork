@@ -3,7 +3,10 @@ package greenjangtanji.yeosuro.feed.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import greenjangtanji.yeosuro.feed.dto.FeedRequestDto;
 import greenjangtanji.yeosuro.global.config.Timestamped;
+import greenjangtanji.yeosuro.image.entity.Image;
+import greenjangtanji.yeosuro.likes.entity.FeedLikes;
 import greenjangtanji.yeosuro.reply.entity.Reply;
+import greenjangtanji.yeosuro.store.entity.Store;
 import greenjangtanji.yeosuro.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -21,19 +24,24 @@ public class Feed extends Timestamped {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private String title;
 
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = false)
-    private int view = 1;
+    @Column(columnDefinition = "integer default 0", nullable = false)
+    private int view;
 
-    @Column(nullable = false)
-    private String imageUrl;
+    @Column(columnDefinition = "integer default 0", nullable = false)
+    private int likeCount;
 
-    private long LikesCount;
+    @Column(columnDefinition = "integer default 0", nullable = false)
+    private int storeCount;
+
+
+    @Enumerated(EnumType.STRING)
+    private FeedCategory feedCategory;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -43,11 +51,20 @@ public class Feed extends Timestamped {
     @OneToMany(mappedBy = "feed", cascade = {CascadeType.PERSIST,CascadeType.REMOVE})
     private List<Reply> replies = new ArrayList<>();
 
+    @OneToMany(mappedBy = "referenceId", fetch = FetchType.LAZY)
+    private List<Image> images = new ArrayList<>();
+
+    @OneToMany(mappedBy = "feed", cascade = {CascadeType.PERSIST,CascadeType.REMOVE})
+    private List<FeedLikes> feedLikes  = new ArrayList<>();
+
+    @OneToMany(mappedBy = "referenceId", fetch = FetchType.LAZY)
+    private List<Store> storeList = new ArrayList<>();
+
     public static Feed createFeed (FeedRequestDto.Post requestDto, User user){
         Feed feed = new Feed();
         feed.title = requestDto.getTitle();
         feed.content = requestDto.getContent();
-        feed.imageUrl = requestDto.getImageUrl();
+        feed.feedCategory = FeedCategory.valueOf(requestDto.getFeedCategory().toUpperCase());
         feed.user = user;
         return feed;
     }
@@ -60,8 +77,15 @@ public class Feed extends Timestamped {
         this.content = content;
     }
 
-    public void updateImage (String ImageUrl){
-        this.imageUrl = imageUrl;
+    public void updateCategory (FeedCategory feedCategory) { this.feedCategory = feedCategory; }
+
+    public void updateViewCount(){ this.view++;}
+
+    public void updateLikeCount(int num) {this.likeCount = likeCount + num; }
+
+    public void updateStoreCount(int num) {this.storeCount = storeCount + num;}
+    public int getRepliesCount() {
+        return replies.size();
     }
 
 }
