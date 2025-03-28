@@ -1,13 +1,13 @@
 package greenjangtanji.yeosuro.global.mail.service;
 
-import greenjangtanji.yeosuro.global.exception.BusinessLogicException;
-import greenjangtanji.yeosuro.global.exception.ExceptionCode;
 import greenjangtanji.yeosuro.global.redis.RedisUtil;
 import greenjangtanji.yeosuro.user.service.UserService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
@@ -46,23 +46,31 @@ public class MailService {
     public void sendMail(String email) {
         String code = redisUtil.createdCertifyNum();
         redisUtil.createRedisData(email, code);
-        MimeMessage message = createMail(email, code);
-        sendMailAsync(message);
+
+
+        asyncSendMail(email,code); // 즉시 응답 후, 비동기로 발송
     }
 
     public void sendResetMail(String email) {
         userService.checkEmail(email);
         String code = redisUtil.createdCertifyNum();
         redisUtil.createRedisData(email, code);
-        MimeMessage message = createMail(email, code);
-        sendMailAsync(message);
+
+        asyncSendMail(email,code);
     }
 
     //메일 발송 비동기 처리
-    @Async
-    public void sendMailAsync (MimeMessage message){
-        javaMailSender.send(message);
+    @Async("mailExecutor")
+    public void asyncSendMail(String email, String code) {
+        try {
+            MimeMessage message = createMail(email, code);
+            javaMailSender.send(message);
+            log.info("인증 메일 비동기 발송 완료: {}", email);
+        } catch (Exception e) {
+            log.error(" 인증 메일 발송 실패: {}", email, e);
+        }
     }
+
 
     public boolean isCodeValid(String email, String inputCode) {
         String storedCode = redisUtil.getData(email);
